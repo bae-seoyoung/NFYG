@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 폐관수련 · Road to 파쇄허공</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gaegu:wght@400;700&family=Nanum+Brush+Script&family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Noto+Serif+TC:wght@300;400;500;700;900&family=Gugi&family=Hahmlet:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink-deep: #0d0805;
+  --ink-mid: #1a120c;
+  --ink-soft: #251a12;
+  --ink-warm: #2a1d12;
+  --paper: #ede2c8;
+  --paper-mid: #b8a17a;
+  --paper-faded: #8b7755;
+  --paper-dim: #5d4d36;
+  --gold: #c9a35c;
+  --gold-bright: #e8c478;
+  --gold-deep: #8b6a35;
+  --seal: #b04030;
+  --seal-bright: #d04a3a;
+  --seal-deep: #7a2a20;
+  --brush: #2a1f15;
+  --border-gold: rgba(201, 163, 92, 0.22);
+  --border-gold-strong: rgba(201, 163, 92, 0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%; width: 100%;
+  background: var(--ink-deep);
+  color: var(--paper);
+  font-family: 'Noto Serif KR', 'Hahmlet', serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Atmospheric layers */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 1;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(201, 163, 92, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(176, 64, 48, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, transparent 0%, var(--ink-deep) 80%);
+  pointer-events: none;
+}
+
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.8 0 0 0 0 0.6 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.06; pointer-events: none; mix-blend-mode: overlay;
+}
+
+.deck {
+  position: relative; width: 100vw; height: 100vh; z-index: 5;
+}
+
+/* === SLIDE BASE === */
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  padding: 6vh 7vw 8vh;
+  overflow: hidden;
+}
+
+.slide.active {
+  display: flex;
+  animation: fadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Chapter marker */
+.chapter {
+  position: absolute;
+  top: 4.5vh; left: 7vw;
+  font-family: 'Noto Serif TC', 'Noto Serif KR', serif;
+  color: var(--gold-deep);
+  font-size: 13px;
+  letter-spacing: 0.45em;
+  font-weight: 400;
+  display: flex; align-items: center; gap: 14px;
+}
+.chapter::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--seal); display: inline-block;
+  transform: rotate(45deg);
+}
+
+/* Page meta */
+.pagemeta {
+  position: absolute;
+  bottom: 4vh; right: 5vw;
+  font-family: 'Noto Serif TC', serif;
+  color: var(--gold-deep);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+}
+
+.workshop-tag {
+  position: absolute;
+  bottom: 4vh; left: 7vw;
+  font-family: 'Noto Serif KR', serif;
+  color: var(--paper-dim);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  font-weight: 300;
+}
+
+/* Vertical banner (poster style) */
+.vbanner {
+  position: absolute;
+  left: 1.8vw;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  color: var(--paper-faded);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 12px;
+  letter-spacing: 0.5em;
+  font-weight: 300;
+  opacity: 0.55;
+  white-space: nowrap;
+}
+
+.vbanner-r {
+  position: absolute;
+  right: 1.8vw;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  color: var(--paper-faded);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  font-weight: 300;
+  opacity: 0.4;
+  white-space: nowrap;
+}
+
+/* Brush divider */
+.brush-div {
+  display: block;
+  margin: 28px auto;
+  width: 160px; height: 14px;
+  opacity: 0.7;
+}
+.brush-div path { fill: var(--gold); }
+
+/* Seal stamp */
+.seal {
+  display: inline-block;
+  background: var(--seal);
+  color: var(--paper);
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  width: 56px; height: 56px;
+  line-height: 56px;
+  text-align: center;
+  letter-spacing: -0.05em;
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px var(--ink-deep), 0 0 0 3px var(--seal-deep);
+  transform: rotate(-3deg);
+  font-size: 26px;
+  text-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+
+/* === SLIDE 1: TITLE === */
+.title-slide {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 60%, rgba(15, 10, 5, 0) 0%, var(--ink-deep) 90%),
+    radial-gradient(ellipse 60% 40% at 50% 30%, rgba(201, 163, 92, 0.08) 0%, transparent 70%),
+    linear-gradient(180deg, #15100a 0%, #0d0805 60%, #1a1208 100%);
+}
+
+.title-eyebrow {
+  font-family: 'Noto Serif KR', serif;
+  color: var(--gold);
+  font-size: 17px;
+  letter-spacing: 0.7em;
+  margin-bottom: 36px;
+  text-indent: 0.7em;
+  font-weight: 400;
+}
+
+.title-main {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(90px, 13vw, 200px);
+  color: var(--paper);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  margin-bottom: 36px;
+  text-shadow:
+    0 0 60px rgba(0,0,0,0.9),
+    2px 2px 0 rgba(176, 64, 48, 0.25);
+  position: relative;
+}
+
+.title-sub {
+  font-family: 'Nanum Brush Script', cursive;
+  font-size: clamp(40px, 5vw, 68px);
+  color: var(--gold-bright);
+  letter-spacing: 0.12em;
+  margin-bottom: 50px;
+  text-shadow: 0 0 30px rgba(232, 196, 120, 0.3);
+}
+
+.title-meta {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  color: var(--paper-mid);
+  letter-spacing: 0.45em;
+  margin-top: 24px;
+  display: flex; gap: 32px; justify-content: center;
+  font-weight: 300;
+}
+
+.title-meta span {
+  position: relative;
+}
+.title-meta span:not(:last-child)::after {
+  content: '·';
+  position: absolute;
+  right: -22px;
+  color: var(--gold-deep);
+}
+
+/* === GENERIC SLIDE === */
+.slide-head {
+  text-align: center;
+  margin-top: 2vh;
+  margin-bottom: 5vh;
+}
+
+.slide-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(38px, 5vw, 68px);
+  color: var(--paper);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.slide-title.brush {
+  font-family: 'Nanum Brush Script', cursive;
+  font-weight: 400;
+  font-size: clamp(56px, 7vw, 96px);
+  color: var(--gold-bright);
+  letter-spacing: 0.06em;
+}
+
+.slide-subtitle {
+  margin-top: 14px;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  color: var(--gold);
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  font-weight: 400;
+}
+
+.slide-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* === GOALS === */
+.goals {
+  display: flex; flex-direction: column;
+  gap: 5vh;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.goal {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.goal-num {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 64px;
+  color: var(--gold);
+  line-height: 1;
+  text-align: center;
+  border-right: 1px solid var(--border-gold-strong);
+  padding: 8px 30px 8px 0;
+  font-weight: 400;
+}
+
+.goal-body {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(20px, 2vw, 26px);
+  color: var(--paper);
+  line-height: 1.7;
+  font-weight: 400;
+  padding-top: 10px;
+}
+
+.goal-body strong {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+
+.goal-body em {
+  color: var(--seal-bright);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* === QUIZ Q === */
+.quiz-q {
+  justify-content: center;
+  text-align: center;
+}
+
+.quiz-q-eyebrow {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 18px;
+  color: var(--seal-bright);
+  letter-spacing: 0.6em;
+  margin-bottom: 60px;
+  text-indent: 0.6em;
+}
+
+.quiz-q-eyebrow::before, .quiz-q-eyebrow::after {
+  content: '◇';
+  margin: 0 20px;
+  color: var(--gold-deep);
+  font-size: 12px;
+}
+
+.quiz-q-en {
+  font-family: 'Noto Serif KR', serif;
+  font-style: italic;
+  font-size: clamp(28px, 3vw, 42px);
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  margin-bottom: 24px;
+  font-weight: 300;
+}
+
+.quiz-q-main {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(70px, 9vw, 130px);
+  color: var(--paper);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.quiz-q-main::after {
+  content: '';
+  display: block;
+  width: 80px; height: 3px;
+  background: var(--seal);
+  margin: 28px auto 0;
+}
+
+.quiz-q-prompt {
+  font-family: 'Nanum Brush Script', cursive;
+  font-size: 36px;
+  color: var(--paper-mid);
+  letter-spacing: 0.2em;
+  margin-top: 60px;
+  opacity: 0.85;
+}
+
+.quiz-q-prompt::before, .quiz-q-prompt::after {
+  content: '─';
+  margin: 0 18px;
+  color: var(--gold-deep);
+}
+
+/* === QUIZ A === */
+.quiz-a {
+  justify-content: center;
+  text-align: center;
+  max-width: 1100px;
+}
+
+.quiz-a-label {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 80px;
+  color: var(--seal);
+  letter-spacing: 0;
+  margin-bottom: 30px;
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(176, 64, 48, 0.2);
+}
+
+.quiz-a-text {
+  font-family: 'Hahmlet', 'Noto Serif KR', serif;
+  font-size: clamp(22px, 2.4vw, 32px);
+  color: var(--paper);
+  line-height: 1.8;
+  font-weight: 300;
+  margin-bottom: 40px;
+  letter-spacing: 0.01em;
+}
+
+.quiz-a-text em {
+  color: var(--gold-bright);
+  font-style: normal;
+  font-weight: 600;
+  position: relative;
+  padding: 0 4px;
+}
+
+.quiz-a-text em::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 100%; height: 2px;
+  background: var(--seal);
+  opacity: 0.5;
+}
+
+.quiz-a-ref {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  color: var(--paper-faded);
+  letter-spacing: 0.35em;
+  margin-bottom: 36px;
+}
+
+.quiz-a-ref::before, .quiz-a-ref::after {
+  content: '──';
+  margin: 0 16px;
+  color: var(--gold-deep);
+}
+
+.quiz-link {
+  display: inline-block;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 17px;
+  color: var(--ink-deep);
+  background: var(--gold);
+  padding: 16px 40px;
+  letter-spacing: 0.25em;
+  text-decoration: none;
+  transition: all 0.4s;
+  border: 1px solid var(--gold);
+  font-weight: 600;
+  text-indent: 0.25em;
+}
+
+.quiz-link:hover {
+  background: var(--gold-bright);
+  letter-spacing: 0.35em;
+  box-shadow: 0 0 40px rgba(232, 196, 120, 0.4);
+}
+
+/* === PRINCIPLES (정신) === */
+.principles-intro {
+  font-family: 'Nanum Brush Script', cursive;
+  font-size: clamp(28px, 3vw, 42px);
+  color: var(--gold-bright);
+  letter-spacing: 0.12em;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.principles-cap {
+  text-align: center;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  color: var(--paper-mid);
+  letter-spacing: 0.25em;
+  margin-bottom: 48px;
+  font-weight: 300;
+}
+
+.principles {
+  display: flex; flex-direction: column;
+  gap: 22px;
+  max-width: 920px;
+  width: 100%;
+  margin-bottom: 36px;
+}
+
+.principle {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 28px;
+  align-items: baseline;
+  padding: 18px 24px;
+  border-left: 2px solid var(--border-gold-strong);
+  background: rgba(201, 163, 92, 0.03);
+}
+
+.principle-num {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 24px;
+  color: var(--gold);
+  letter-spacing: 0.2em;
+  font-weight: 500;
+}
+.principle-num::before {
+  content: '─';
+  margin-right: 12px;
+  color: var(--gold-deep);
+}
+
+.principle-text {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(17px, 1.6vw, 22px);
+  color: var(--paper);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.principle-text strong {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+
+.principle-text em {
+  color: var(--paper-mid);
+  font-style: normal;
+  font-size: 0.85em;
+}
+
+/* Exam box */
+.exam-box {
+  border: 1px solid var(--border-gold-strong);
+  padding: 22px 32px;
+  max-width: 900px;
+  width: 100%;
+  position: relative;
+  background: rgba(176, 64, 48, 0.05);
+}
+
+.exam-box::before {
+  content: '示問';
+  position: absolute;
+  top: -14px; left: 28px;
+  background: var(--ink-deep);
+  color: var(--seal-bright);
+  padding: 0 12px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  letter-spacing: 0.3em;
+}
+
+.exam-text {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 18px;
+  color: var(--paper);
+  line-height: 1.7;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.exam-text strong {
+  color: var(--gold-bright);
+  font-style: normal;
+}
+
+/* === AGENT LOOP === */
+.loop-wrap {
+  max-width: 1200px;
+  width: 100%;
+  text-align: center;
+}
+
+.loop-tagline {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 17px;
+  color: var(--paper-mid);
+  letter-spacing: 0.3em;
+  margin-bottom: 50px;
+  font-weight: 300;
+}
+
+.loop-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 auto 50px;
+  max-width: 1100px;
+  position: relative;
+  padding: 0 20px;
+}
+
+.loop-node {
+  flex: 1;
+  background: rgba(201, 163, 92, 0.06);
+  border: 1px solid var(--border-gold-strong);
+  padding: 26px 16px;
+  text-align: center;
+  position: relative;
+  font-family: 'Noto Serif KR', serif;
+}
+
+.loop-node-cjk {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 0.35em;
+  margin-bottom: 10px;
+  text-indent: 0.35em;
+}
+
+.loop-node-name {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 22px;
+  color: var(--paper);
+  letter-spacing: 0.02em;
+}
+
+.loop-arrow {
+  flex: 0 0 36px;
+  color: var(--gold);
+  font-size: 28px;
+  text-align: center;
+  font-family: 'Noto Serif TC', serif;
+}
+
+.loop-back {
+  margin-top: 30px;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  color: var(--paper-faded);
+  letter-spacing: 0.5em;
+}
+
+.loop-back::before, .loop-back::after {
+  content: '↶';
+  margin: 0 14px;
+  color: var(--gold);
+  font-size: 18px;
+}
+
+.loop-link {
+  display: inline-block;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  color: var(--gold);
+  border: 1px solid var(--border-gold);
+  padding: 8px 18px;
+  letter-spacing: 0.3em;
+  text-decoration: none;
+  margin-top: 30px;
+  transition: all 0.3s;
+}
+
+.loop-link:hover {
+  background: rgba(201, 163, 92, 0.1);
+  color: var(--gold-bright);
+}
+
+/* === LAYER TABLE === */
+.layer-table {
+  width: 100%;
+  max-width: 1200px;
+  border-collapse: collapse;
+  font-family: 'Noto Serif KR', serif;
+  margin: 0 auto;
+}
+
+.layer-table thead th {
+  font-family: 'Noto Serif TC', serif;
+  color: var(--gold);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  padding: 16px 18px;
+  text-align: left;
+  border-bottom: 1.5px solid var(--gold-deep);
+  font-weight: 500;
+  background: rgba(201, 163, 92, 0.05);
+}
+
+.layer-table tbody td {
+  padding: 18px;
+  border-bottom: 1px solid var(--border-gold);
+  vertical-align: top;
+  font-size: 16px;
+  color: var(--paper);
+  line-height: 1.6;
+}
+
+.layer-table tbody tr:hover td {
+  background: rgba(201, 163, 92, 0.03);
+}
+
+.layer-name {
+  font-family: 'Black Han Sans', sans-serif;
+  color: var(--gold-bright);
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  width: 110px;
+}
+
+.layer-q {
+  color: var(--paper-mid);
+  font-style: italic;
+  font-weight: 300;
+  width: 28%;
+}
+
+.layer-opts {
+  color: var(--paper);
+  font-weight: 400;
+}
+
+/* === SCOPE === */
+.scope {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.scope-card {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 28px 36px;
+  border: 1px solid var(--border-gold-strong);
+  position: relative;
+}
+
+.scope-card.do {
+  background: linear-gradient(90deg, rgba(201, 163, 92, 0.08) 0%, rgba(201, 163, 92, 0.02) 100%);
+  border-color: var(--gold-deep);
+}
+
+.scope-card.dont {
+  background: linear-gradient(90deg, rgba(176, 64, 48, 0.08) 0%, rgba(176, 64, 48, 0.02) 100%);
+  border-color: var(--seal-deep);
+}
+
+.scope-mark {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 56px;
+  line-height: 1;
+  text-align: center;
+  font-weight: 700;
+}
+
+.scope-card.do .scope-mark { color: var(--gold-bright); }
+.scope-card.dont .scope-mark { color: var(--seal-bright); }
+
+.scope-text {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(19px, 1.7vw, 24px);
+  color: var(--paper);
+  line-height: 1.6;
+}
+
+.scope-text strong {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+
+.scope-card.dont .scope-text strong {
+  color: var(--seal-bright);
+}
+
+.scope-final {
+  margin-top: 22px;
+  text-align: center;
+  font-family: 'Nanum Brush Script', cursive;
+  font-size: clamp(26px, 2.6vw, 36px);
+  color: var(--gold-bright);
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  padding: 20px;
+  border-top: 1px solid var(--border-gold);
+  border-bottom: 1px solid var(--border-gold);
+}
+
+/* === PROBLEMS OVERVIEW === */
+.problems-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.prob-cat {
+  border: 1px solid var(--border-gold);
+  background: rgba(201, 163, 92, 0.03);
+  padding: 22px 24px;
+  position: relative;
+}
+
+.prob-cat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-gold);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.prob-cat-name {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 19px;
+  color: var(--paper);
+  letter-spacing: 0.03em;
+}
+
+.prob-cat-count {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  color: var(--gold);
+  letter-spacing: 0.2em;
+}
+
+.prob-cat-body {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  color: var(--paper-mid);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+.prob-total {
+  text-align: center;
+  margin-top: 28px;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  color: var(--gold-bright);
+  letter-spacing: 0.35em;
+}
+
+.prob-total strong {
+  font-size: 28px;
+  color: var(--paper);
+  margin: 0 8px;
+  font-family: 'Black Han Sans', sans-serif;
+}
+
+/* === PROBLEMS DETAIL === */
+.prob-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 32px;
+  max-width: 1300px;
+  width: 100%;
+  font-family: 'Noto Serif KR', serif;
+}
+
+.prob-list-section {
+  grid-column: span 2;
+  font-family: 'Noto Serif TC', serif;
+  color: var(--gold);
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  padding: 14px 0 8px;
+  margin-top: 4px;
+  border-bottom: 1px solid var(--border-gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.prob-list-section:first-child { margin-top: 0; }
+
+.prob-list-section-cnt {
+  font-size: 11px;
+  color: var(--gold-deep);
+  letter-spacing: 0.3em;
+}
+
+.prob-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 12px;
+  padding: 8px 0;
+  align-items: baseline;
+  font-size: 14px;
+  color: var(--paper);
+  border-bottom: 1px dashed rgba(201, 163, 92, 0.1);
+}
+
+.prob-id {
+  font-family: 'Noto Serif TC', serif;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.prob-desc {
+  font-family: 'Noto Serif KR', serif;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.prob-desc em {
+  color: var(--paper-faded);
+  font-style: normal;
+  font-size: 0.85em;
+}
+
+.prob-meta {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px;
+  color: var(--paper-mid);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  font-weight: 300;
+}
+
+.pri-h { color: #e85d3c; font-weight: 700; }
+.pri-m { color: var(--gold-bright); font-weight: 600; }
+.pri-l { color: var(--paper-faded); }
+
+/* === DAY === */
+.day-slide {
+  justify-content: center;
+}
+
+.day-big {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(180px, 26vw, 380px);
+  color: var(--paper);
+  line-height: 0.9;
+  text-align: center;
+  letter-spacing: -0.02em;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.07;
+  z-index: 1;
+  pointer-events: none;
+  text-shadow: 0 0 40px var(--seal-deep);
+}
+
+.day-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.day-marker {
+  font-family: 'Noto Serif TC', serif;
+  color: var(--seal-bright);
+  font-size: 22px;
+  letter-spacing: 0.6em;
+  margin-bottom: 10px;
+  text-indent: 0.6em;
+}
+
+.day-marker-kr {
+  font-family: 'Noto Serif KR', serif;
+  color: var(--gold);
+  font-size: 14px;
+  letter-spacing: 0.5em;
+  margin-bottom: 60px;
+  text-indent: 0.5em;
+  font-weight: 300;
+}
+
+.day-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(40px, 5vw, 64px);
+  color: var(--paper);
+  line-height: 1.2;
+  margin-bottom: 50px;
+}
+
+.day-title em {
+  color: var(--gold-bright);
+  font-style: normal;
+}
+
+.day-body {
+  font-family: 'Hahmlet', 'Noto Serif KR', serif;
+  font-size: clamp(18px, 1.7vw, 24px);
+  color: var(--paper);
+  line-height: 1.9;
+  font-weight: 300;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.day-body strong {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+
+.day-body em {
+  color: var(--seal-bright);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.day-tag {
+  display: inline-block;
+  margin-top: 40px;
+  padding: 8px 24px;
+  border: 1px solid var(--border-gold-strong);
+  background: rgba(201, 163, 92, 0.06);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+}
+
+/* === TEAM PRINCIPLES === */
+.tprinciples {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.tprinciple {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 24px;
+  align-items: start;
+  padding: 18px 28px;
+  border-left: 2px solid var(--border-gold-strong);
+  background: rgba(201, 163, 92, 0.03);
+}
+
+.tp-num {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 32px;
+  color: var(--gold-bright);
+  line-height: 1;
+  text-align: center;
+  font-weight: 600;
+}
+
+.tp-text {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(16px, 1.5vw, 20px);
+  color: var(--paper);
+  line-height: 1.65;
+  font-weight: 400;
+  padding-top: 4px;
+}
+
+.tp-text strong {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+
+.tp-text em {
+  color: var(--paper-mid);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.tp-text .accent-red {
+  color: var(--seal-bright);
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* === RANKS === */
+.ranks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  width: 100%;
+  margin-bottom: 36px;
+}
+
+.rank-card {
+  border: 1px solid var(--border-gold-strong);
+  padding: 32px 28px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(201, 163, 92, 0.06) 0%, rgba(201, 163, 92, 0.01) 100%);
+  position: relative;
+}
+
+.rank-mark {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 56px;
+  color: var(--gold-bright);
+  line-height: 1;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.rank-name {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 22px;
+  color: var(--paper);
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-gold);
+}
+
+.rank-def {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  color: var(--paper-mid);
+  line-height: 1.6;
+  font-weight: 300;
+  margin-bottom: 22px;
+  min-height: 80px;
+}
+
+.rank-members {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 17px;
+  color: var(--gold-bright);
+  font-weight: 600;
+  letter-spacing: 0.15em;
+}
+
+.guest-row {
+  width: 100%;
+  max-width: 1200px;
+  border: 1px dashed var(--border-gold-strong);
+  padding: 24px 32px;
+  text-align: center;
+  background: rgba(176, 64, 48, 0.03);
+}
+
+.guest-label {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  color: var(--seal-bright);
+  letter-spacing: 0.45em;
+  margin-bottom: 12px;
+  text-indent: 0.45em;
+}
+
+.guest-members {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px;
+  color: var(--paper);
+  font-weight: 500;
+  letter-spacing: 0.25em;
+}
+
+/* === FINAL === */
+.final-slide {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 60%, rgba(15, 10, 5, 0) 0%, var(--ink-deep) 90%),
+    radial-gradient(ellipse 50% 30% at 50% 30%, rgba(176, 64, 48, 0.08) 0%, transparent 70%);
+}
+
+.final-eyebrow {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  color: var(--gold);
+  letter-spacing: 0.6em;
+  margin-bottom: 36px;
+  text-indent: 0.6em;
+}
+
+.final-main {
+  font-family: 'Nanum Brush Script', cursive;
+  font-size: clamp(120px, 18vw, 280px);
+  color: var(--paper);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-shadow:
+    0 0 80px rgba(0,0,0,0.9),
+    0 0 30px rgba(232, 196, 120, 0.3);
+  margin-bottom: 40px;
+}
+
+.final-sub {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(20px, 2vw, 28px);
+  color: var(--paper-mid);
+  letter-spacing: 0.35em;
+  line-height: 1.6;
+  max-width: 900px;
+  text-indent: 0.35em;
+  font-weight: 300;
+}
+
+.final-sub strong {
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+
+.final-stamp {
+  margin-top: 60px;
+}
+
+/* === NAV === */
+.nav {
+  position: fixed;
+  bottom: 2vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  z-index: 100;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+.nav:hover { opacity: 1; }
+
+.nav-btn {
+  background: rgba(13, 8, 5, 0.6);
+  border: 1px solid var(--border-gold);
+  color: var(--gold);
+  padding: 8px 22px;
+  font-family: 'Noto Serif TC', serif;
+  cursor: pointer;
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  transition: all 0.25s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.nav-btn:hover {
+  background: rgba(201, 163, 92, 0.15);
+  color: var(--gold-bright);
+  border-color: var(--gold);
+}
+
+.nav-info {
+  color: var(--gold-deep);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* === KBD HINT === */
+.kbd-hint {
+  position: fixed;
+  bottom: 2vh;
+  right: 2vw;
+  color: var(--paper-dim);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  z-index: 99;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .loop-diagram { flex-direction: column; gap: 8px; }
+  .loop-arrow { transform: rotate(90deg); }
+  .ranks, .problems-grid { grid-template-columns: 1fr; }
+  .prob-list { grid-template-columns: 1fr; }
+  .prob-list-section { grid-column: span 1; }
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ============== 1. TITLE ============== -->
+<section class="slide active title-slide">
+  <div class="vbanner">끝나지 않으면 한 나간다</div>
+  <div class="vbanner-r">迷信은 道를 가린다</div>
+
+  <div class="title-eyebrow">AI 自動化 閉關修練</div>
+  <div class="title-main">AI 폐관수련</div>
+  <div class="title-sub">Road to 破碎虛空</div>
+
+  <svg class="brush-div" viewBox="0 0 160 14" preserveAspectRatio="none">
+    <path d="M2,7 C20,3 40,11 60,7 C80,3 100,11 120,7 C140,3 158,7 158,7" stroke="currentColor" stroke-width="1.5" fill="none" style="stroke:var(--gold)" />
+    <circle cx="80" cy="7" r="2.5" fill="var(--seal)"/>
+  </svg>
+
+  <div class="title-meta">
+    <span>@제주도</span><span>@7pictures team</span><span>二〇二六</span>
+  </div>
+</section>
+
+<!-- ============== 2. 우리의 목표 ============== -->
+<section class="slide">
+  <div class="chapter">第一章 ◆ 出師表</div>
+  <div class="vbanner">끝나지 않으면 한 나간다</div>
+
+  <div class="slide-head">
+    <div class="slide-title">우리의 목표</div>
+    <div class="slide-subtitle">出師表 · 출사의 표</div>
+  </div>
+
+  <div class="slide-body">
+    <div class="goals">
+      <div class="goal">
+        <div class="goal-num">一</div>
+        <div class="goal-body">
+          이 수련장을 나가는 순간부터 모든 관원이 <strong>혼자서</strong> AI · Agent 를 온전하게 레버리지하여
+          본인이 마주하는 <em>문제를 해결하고 위임할 수 있게 한다</em>.
+        </div>
+      </div>
+
+      <div class="goal">
+        <div class="goal-num">二</div>
+        <div class="goal-body">
+          그 과정 안에서 우리 팀이 마주한 가장 큰 문제들 — <strong>넷플연가 · 버킷리스트 클럽 운영의 병목</strong> —
+          을 <em>함께 해결한다</em>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第一頁</div>
+</section>
+
+<!-- ============== 3. 퀴즈 - 질문 ============== -->
+<section class="slide quiz-q">
+  <div class="chapter">第二章 ◆ 入關 試問</div>
+  <div class="vbanner">迷信이 가장 무겁다</div>
+
+  <div class="quiz-q-eyebrow">入關 試驗</div>
+  <div class="quiz-q-en">Capability Overhang</div>
+  <div class="quiz-q-main">…이란?</div>
+
+  <div class="quiz-q-prompt">答을 내려보시오</div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第二頁</div>
+</section>
+
+<!-- ============== 4. 퀴즈 - 답 ============== -->
+<section class="slide">
+  <div class="chapter">第二章 ◆ 答疑</div>
+  <div class="vbanner">迷信이 가장 무겁다</div>
+
+  <div class="slide-body quiz-a">
+    <div class="quiz-a-label">答</div>
+
+    <div class="quiz-a-text">
+      이미 모든 걸 AI 로 해낼 수 있는데 —<br/>
+      그 방법을 우리가 모르거나, 그 정도의 사고를 훈련하지 못했다는<br/>
+      <em>"믿음"</em> 만이 유의미하다.
+    </div>
+
+    <div class="quiz-a-ref">노정석 ◆ capability overhang · 신인류</div>
+
+    <a class="quiz-link" href="https://www.youtube.com/watch?v=UW5fygoXYQw&t=1s" target="_blank" rel="noopener">
+      ▶ 영상으로 듣기
+    </a>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第三頁</div>
+</section>
+
+<!-- ============== 5. 정신 (Soft Skill) ============== -->
+<section class="slide">
+  <div class="chapter">第三章 ◆ 心法 · Soft Skill</div>
+  <div class="vbanner">心法이 없는 招式은 헛되다</div>
+
+  <div class="slide-head">
+    <div class="slide-title brush">정신</div>
+    <div class="slide-subtitle">心法 · 에너지를 전달하는 법</div>
+  </div>
+
+  <div class="slide-body">
+    <div class="principles-intro">에너지를 전달하는 것</div>
+    <div class="principles-cap">가장 높은 수준의 에너지를 전달하는 것이 핵심</div>
+
+    <div class="principles">
+      <div class="principle">
+        <div class="principle-num">一</div>
+        <div class="principle-text">더 적은 단어로 <strong>더 많은 결정</strong>을 내리게 하는 원칙</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">二</div>
+        <div class="principle-text">더 정확한 언어로 <strong>원하는 것</strong>을 전달하는 커뮤니케이션</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">三</div>
+        <div class="principle-text"><strong>필요한 정보</strong>를 정확히 그만큼 제공하는 안목 <em>(정보의 부족도, 과잉도 다 비용)</em></div>
+      </div>
+    </div>
+
+    <div class="exam-box">
+      <div class="exam-text">
+        한 번의 프롬프팅으로 SpaceX 의 재사용 로켓 <strong>Falcon Heavy</strong> 설계도를 만들어야 한다면?
+      </div>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第四頁</div>
+</section>
+
+<!-- ============== 6. 육체 (Agent Loop) ============== -->
+<section class="slide">
+  <div class="chapter">第四章 ◆ 招式 · Hard Skill</div>
+  <div class="vbanner">招式이 心法을 따른다</div>
+
+  <div class="slide-head">
+    <div class="slide-title brush">육체</div>
+    <div class="slide-subtitle">招式 · Agent 를 설계하는 법</div>
+  </div>
+
+  <div class="slide-body">
+    <div class="loop-wrap">
+      <div class="loop-tagline">Agent Loop 을 이해하고, 각 layer 를 직접 설계 · 연결할 수 있어야 한다</div>
+
+      <div class="loop-diagram">
+        <div class="loop-node">
+          <div class="loop-node-cjk">入</div>
+          <div class="loop-node-name">Input</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-node">
+          <div class="loop-node-cjk">念</div>
+          <div class="loop-node-name">Thought Process</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-node">
+          <div class="loop-node-cjk">用</div>
+          <div class="loop-node-name">Tool Usage</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-node">
+          <div class="loop-node-cjk">果</div>
+          <div class="loop-node-name">Result</div>
+        </div>
+      </div>
+
+      <div class="loop-back">Loop</div>
+
+      <a class="loop-link" href="https://code.claude.com/docs/en/agent-sdk/agent-loop" target="_blank" rel="noopener">
+        Claude Code Docs ↗
+      </a>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第五頁</div>
+</section>
+
+<!-- ============== 7. Layer 선택지 표 ============== -->
+<section class="slide">
+  <div class="chapter">第四章 ◆ 招式 · 續</div>
+  <div class="vbanner">선택지를 알아야 휘두를 수 있다</div>
+
+  <div class="slide-head">
+    <div class="slide-title">각 layer 의 선택지</div>
+    <div class="slide-subtitle">필요에 따라 직접 연결할 수 있는가</div>
+  </div>
+
+  <div class="slide-body">
+    <table class="layer-table">
+      <thead>
+        <tr>
+          <th>LAYER</th>
+          <th>묻는 것</th>
+          <th>우리가 가진 선택지</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer-name">Input</td>
+          <td class="layer-q">무엇을 언제 받는가?</td>
+          <td class="layer-opts">채팅 · Slack 호출 · Webhook · 채널톡 trigger · 어드민 액션 · n8n 스케줄</td>
+        </tr>
+        <tr>
+          <td class="layer-name">Thought</td>
+          <td class="layer-q">어떻게 사고하게 할 것인가?</td>
+          <td class="layer-opts">System prompt · Skill · Sub-agent · 5W1H · 1원칙 분해</td>
+        </tr>
+        <tr>
+          <td class="layer-name">Tool</td>
+          <td class="layer-q">어떤 외부 능력을 줄 것인가?</td>
+          <td class="layer-opts">DB · Notion · Slack · Gmail · Forest Admin · 메타 광고 API · 채널톡 MCP</td>
+        </tr>
+        <tr>
+          <td class="layer-name">Result</td>
+          <td class="layer-q">결과를 어떻게 판단하고 Loop 을 조율하는가?</td>
+          <td class="layer-opts">사람 검수 게이트의 위치 · retry 정책 · 결과 기록 · 다음 Loop 으로 이어 보내는 방식</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第六頁</div>
+</section>
+
+<!-- ============== 8. 워크숍 스코프 ============== -->
+<section class="slide">
+  <div class="chapter">第五章 ◆ 戒律</div>
+  <div class="vbanner">戒律을 어기면 길을 잃는다</div>
+
+  <div class="slide-head">
+    <div class="slide-title">이번 워크숍의 스코프</div>
+    <div class="slide-subtitle">戒律 · 계율</div>
+  </div>
+
+  <div class="slide-body">
+    <div class="scope">
+      <div class="scope-card do">
+        <div class="scope-mark">✓</div>
+        <div class="scope-text">
+          있는 구조와 시스템을 AI 로 엮어내어 <strong>압도적으로 적은 리소스로 해결</strong>한다
+        </div>
+      </div>
+
+      <div class="scope-card dont">
+        <div class="scope-mark">✗</div>
+        <div class="scope-text">
+          더 효과적인 / 새로운 문제 해결을 위해 시스템을 <strong>재설계</strong>(예: 정산 구조 자체)하거나 <strong>새로</strong> 만들지 않는다
+        </div>
+      </div>
+
+      <div class="scope-final">
+        스코프를 줄여 구조적인 우려 없이<br/>
+        AI 를 온전하게 활용하고 문제 해결을 <em>몸으로</em> 체감하기 위함이다
+      </div>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第七頁</div>
+</section>
+
+<!-- ============== 9. 문제들 개요 ============== -->
+<section class="slide">
+  <div class="chapter">第六章 ◆ 戰書</div>
+  <div class="vbanner">관원들이 가져온 戰場</div>
+
+  <div class="slide-head">
+    <div class="slide-title">팀원들이 해결하고 싶은 문제들</div>
+    <div class="slide-subtitle">戰書 · 우리가 풀어낼 戰場</div>
+  </div>
+
+  <div class="slide-body">
+    <div class="problems-grid">
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">🔥 광고 운영</div><div class="prob-cat-count">五</div></div>
+        <div class="prob-cat-body">소재 자동 제작 · 카피·예산 자동 도출 · 세팅 자동화 · ON/OFF · 게재 자동화</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">💸 정산</div><div class="prob-cat-count">一</div></div>
+        <div class="prob-cat-body">주간 · 월간 정산 자동화</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">📚 커리큘럼</div><div class="prob-cat-count">三</div></div>
+        <div class="prob-cat-body">레퍼런스 추천 · 초안 작성 · 어드민 업로드</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">🛟 CS 자동화</div><div class="prob-cat-count">二</div></div>
+        <div class="prob-cat-body">채널톡 AI Agent · 제품 오류 1차 분석</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">🤝 섭외 · 공급</div><div class="prob-cat-count">三</div></div>
+        <div class="prob-cat-body">섭외 워크플로우 · 공급 콘텐츠 Agent · 인센티브 추출</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">🗓️ 매니저 운영</div><div class="prob-cat-count">四</div></div>
+        <div class="prob-cat-body">편성표 · 레퍼런스 노출 · 자동 배정 · 특이사항 알림</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">📞 모임 응대</div><div class="prob-cat-count">三</div></div>
+        <div class="prob-cat-body">제휴 응답 · 모임 변경 · 재오픈 알림</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">🧷 단독</div><div class="prob-cat-count">四</div></div>
+        <div class="prob-cat-body">채용 메일 · 개인지출 · 공간 어드민 · 랜딩 생성</div>
+      </div>
+      <div class="prob-cat">
+        <div class="prob-cat-head"><div class="prob-cat-name">📊 데이터 · 학습</div><div class="prob-cat-count">四</div></div>
+        <div class="prob-cat-body">유저 행동 분석 동료 · 경영 대시보드 · 스크럼 취합 · 노하우 누적</div>
+      </div>
+    </div>
+
+    <div class="prob-total">
+      총 <strong>二十九</strong> 開戰
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第八頁</div>
+</section>
+
+<!-- ============== 10. 문제 상세 1 (광고·정산·커리큘럼) ============== -->
+<section class="slide">
+  <div class="chapter">第六章 ◆ 戰書 · 一</div>
+  <div class="vbanner">광고 · 정산 · 커리큘럼</div>
+
+  <div class="slide-head">
+    <div class="slide-title" style="font-size: clamp(28px, 4vw, 48px);">광고 · 정산 · 커리큘럼</div>
+  </div>
+
+  <div class="slide-body" style="justify-content: flex-start;">
+    <div class="prob-list">
+      <div class="prob-list-section">🔥 광고 운영 <span class="prob-list-section-cnt">五 항목</span></div>
+      <div class="prob-row"><div class="prob-id">A1</div><div class="prob-desc">광고 소재(장표) 자동 제작 — Canva → 메타까지</div><div class="prob-meta">희재</div></div>
+      <div class="prob-row"><div class="prob-id">A2</div><div class="prob-desc">알림신청 등록 시 카피·예산·재오픈 사례 자동 도출</div><div class="prob-meta">상권</div></div>
+      <div class="prob-row"><div class="prob-id">A3</div><div class="prob-desc">광고 세팅(워딩·이미지·UTM) 자동 업데이트</div><div class="prob-meta"><span class="pri-m">⚡</span> 민철 · 경송</div></div>
+      <div class="prob-row"><div class="prob-id">A4</div><div class="prob-desc">광고 ON/OFF · 예산 증감 자동화</div><div class="prob-meta"><span class="pri-m">⚡</span> 경송</div></div>
+      <div class="prob-row"><div class="prob-id">A5</div><div class="prob-desc">메타에 광고 장표 직접 게재 자동화</div><div class="prob-meta">희재</div></div>
+
+      <div class="prob-list-section">💸 정산 <span class="prob-list-section-cnt">一 항목</span></div>
+      <div class="prob-row"><div class="prob-id">B1</div><div class="prob-desc">주간·월간 정산 자동화 <em>(5종 CSV 수동 다운로드 → 어드민에서 한 방에)</em></div><div class="prob-meta"><span class="pri-h">🔥</span> 경송</div></div>
+
+      <div class="prob-list-section">📚 커리큘럼 워크플로우 <span class="prob-list-section-cnt">三 항목</span></div>
+      <div class="prob-row"><div class="prob-id">C1</div><div class="prob-desc">모임 주제 기반 커리큘럼 레퍼런스 자동 추천</div><div class="prob-meta"><span class="pri-h">🔥</span> 민철</div></div>
+      <div class="prob-row"><div class="prob-id">C2</div><div class="prob-desc">모임장 커리큘럼 초안 자동 작성</div><div class="prob-meta">희재</div></div>
+      <div class="prob-row"><div class="prob-id">C3</div><div class="prob-desc">커리큘럼 어드민 업로드 자동화</div><div class="prob-meta">희재</div></div>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第九頁</div>
+</section>
+
+<!-- ============== 11. 문제 상세 2 (CS·섭외·매니저·응대) ============== -->
+<section class="slide">
+  <div class="chapter">第六章 ◆ 戰書 · 二</div>
+  <div class="vbanner">CS · 섭외 · 매니저 · 응대</div>
+
+  <div class="slide-head">
+    <div class="slide-title" style="font-size: clamp(28px, 4vw, 48px);">CS · 섭외 · 매니저 · 응대</div>
+  </div>
+
+  <div class="slide-body" style="justify-content: flex-start;">
+    <div class="prob-list">
+      <div class="prob-list-section">🛟 CS 자동화 <span class="prob-list-section-cnt">二 항목</span></div>
+      <div class="prob-row"><div class="prob-id">D1</div><div class="prob-desc">채널톡 CS AI Agent 자동 응대 <em>(상담량 80% 감소 목표)</em></div><div class="prob-meta">채원</div></div>
+      <div class="prob-row"><div class="prob-id">D2</div><div class="prob-desc">CS 제품 오류 1차 분석 자동화 (n8n)</div><div class="prob-meta">채원</div></div>
+
+      <div class="prob-list-section">🤝 섭외 · 공급 콘텐츠 <span class="prob-list-section-cnt">三 항목</span></div>
+      <div class="prob-row"><div class="prob-id">E1</div><div class="prob-desc">버킷리스트 클럽 섭외 워크플로우 자동화</div><div class="prob-meta">희재 · 상권</div></div>
+      <div class="prob-row"><div class="prob-id">E2</div><div class="prob-desc">카테고리별 공급 콘텐츠 AI Agent</div><div class="prob-meta">채원</div></div>
+      <div class="prob-row"><div class="prob-id">E3</div><div class="prob-desc">인센티브 대상 모임장 추출 + 메시지 자동 발송</div><div class="prob-meta">희재</div></div>
+
+      <div class="prob-list-section">🗓️ 정기모임 · 매니저 운영 <span class="prob-list-section-cnt">四 항목</span></div>
+      <div class="prob-row"><div class="prob-id">F1</div><div class="prob-desc">정기 모임 편성표 시트 자동 업데이트</div><div class="prob-meta"><span class="pri-l">·</span> 민철</div></div>
+      <div class="prob-row"><div class="prob-id">F2</div><div class="prob-desc">모임장 모집 페이지 정기모임 레퍼런스 자동 노출</div><div class="prob-meta">민철</div></div>
+      <div class="prob-row"><div class="prob-id">F3</div><div class="prob-desc">커뮤니티 매니저 자동 배정</div><div class="prob-meta"><span class="pri-m">⚡</span> 민철 · 경송</div></div>
+      <div class="prob-row"><div class="prob-id">F4</div><div class="prob-desc">매니저용 특이사항 알림 자동 생성</div><div class="prob-meta"><span class="pri-l">·</span> 경송</div></div>
+
+      <div class="prob-list-section">📞 모임 운영 응대 <span class="prob-list-section-cnt">三 항목</span></div>
+      <div class="prob-row"><div class="prob-id">G1</div><div class="prob-desc">제휴 공간 · 인바운드 모임장 응답 자동화</div><div class="prob-meta">희재</div></div>
+      <div class="prob-row"><div class="prob-id">G2</div><div class="prob-desc">모임 변경 플로우 재구성 + 자동화 <em>(주당 10~15건)</em></div><div class="prob-meta"><span class="pri-m">⚡</span> 경송</div></div>
+      <div class="prob-row"><div class="prob-id">G3</div><div class="prob-desc">재오픈 모임 첫 알림 자동화</div><div class="prob-meta"><span class="pri-m">⚡</span> 경송</div></div>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第十頁</div>
+</section>
+
+<!-- ============== 12. 문제 상세 3 (단독·데이터) ============== -->
+<section class="slide">
+  <div class="chapter">第六章 ◆ 戰書 · 三</div>
+  <div class="vbanner">단독 항목 · 데이터 · 학습</div>
+
+  <div class="slide-head">
+    <div class="slide-title" style="font-size: clamp(28px, 4vw, 48px);">단독 항목 · 데이터 · 학습</div>
+  </div>
+
+  <div class="slide-body" style="justify-content: flex-start;">
+    <div class="prob-list">
+      <div class="prob-list-section">🧷 단독 항목 <span class="prob-list-section-cnt">四 항목</span></div>
+      <div class="prob-row"><div class="prob-id">H</div><div class="prob-desc">채용 메일 응답 자동화</div><div class="prob-meta">희재</div></div>
+      <div class="prob-row"><div class="prob-id">I</div><div class="prob-desc">개인지출 검수 자동화 — 영수증 OCR + 규정 검증</div><div class="prob-meta">희재</div></div>
+      <div class="prob-row"><div class="prob-id">J</div><div class="prob-desc">플랫폼팀 공간 운영 어드민 일원화 — 등록·스케줄링·정산·세금계산서</div><div class="prob-meta">상권</div></div>
+      <div class="prob-row"><div class="prob-id">M</div><div class="prob-desc">1page 기획서 → 랜딩 페이지 자동 생성</div><div class="prob-meta">희재</div></div>
+
+      <div class="prob-list-section">📊 데이터 인사이트 · 학습 누적 <span class="prob-list-section-cnt">四 항목</span></div>
+      <div class="prob-row"><div class="prob-id">K1</div><div class="prob-desc">스스로 발견하는 유저 행동 분석 동료 + 아하 모먼트 발굴</div><div class="prob-meta">채원</div></div>
+      <div class="prob-row"><div class="prob-id">L1</div><div class="prob-desc">경영지표 대시보드 + 팀 위클리 자동화</div><div class="prob-meta"><span class="pri-m">⚡</span> 경송</div></div>
+      <div class="prob-row"><div class="prob-id">L2</div><div class="prob-desc">일일 스크럼 → 주간 스크럼 자동 취합</div><div class="prob-meta">희재</div></div>
+      <div class="prob-row"><div class="prob-id">N</div><div class="prob-desc">AI 작업 학습 · 노하우 자동 누적 인프라</div><div class="prob-meta">채원</div></div>
+    </div>
+
+    <div style="margin-top: 24px; padding: 16px 28px; border: 1px dashed var(--border-gold); font-family: 'Noto Serif KR', serif; font-size: 14px; color: var(--paper-mid); letter-spacing: 0.15em; text-align: center; max-width: 1200px; width: 100%;">
+      🔥 <strong style="color: var(--gold-bright);">High</strong> B1 · C1　　⚡ <strong style="color: var(--gold-bright);">Medium</strong> A3 · A4 · F3 · G2 · G3 · L1　　미지정 18 항목은 워크숍 자리에서 합의
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第十一頁</div>
+</section>
+
+<!-- ============== 13. 진행방식 火 (화) ============== -->
+<section class="slide day-slide">
+  <div class="chapter">第七章 ◆ 修練 · 第一日</div>
+  <div class="vbanner">火로 鐵을 녹인다</div>
+
+  <div class="day-big">火</div>
+
+  <div class="day-content">
+    <div class="day-marker">第一日 · 火曜日</div>
+    <div class="day-marker-kr">화 — 어떻게든 해내기 · 자산으로 굳히기</div>
+
+    <div class="day-title">
+      AI 와 대화하며 <em>어떻게든 해내기</em><br/>
+      + SKILL 로 만들기
+    </div>
+
+    <div class="day-body">
+      문제 하나를 잡고 일단 AI 와의 <strong>대화</strong> 로 끝까지 해내본다.<br/>
+      해내고 나면 그 과정을 <em>SKILL</em> 또는 <em>MCP</em> 로 묶어<br/>
+      <strong>재사용 가능한 자산</strong> 으로 변환한다.
+    </div>
+
+    <div class="day-tag">SKILL · MCP · 외부 정보 연결</div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第十二頁</div>
+</section>
+
+<!-- ============== 14. 진행방식 水 (수) ============== -->
+<section class="slide day-slide">
+  <div class="chapter">第七章 ◆ 修練 · 第二日</div>
+  <div class="vbanner">水는 길을 찾는다</div>
+
+  <div class="day-big">水</div>
+
+  <div class="day-content">
+    <div class="day-marker">第二日 · 水曜日</div>
+    <div class="day-marker-kr">수 — 하나의 Agent 가 여러 문제를</div>
+
+    <div class="day-title">
+      하나의 Agent 가 <em>여러 문제</em> 를 해결하도록<br/>
+      구조화 + 트리거 연결
+    </div>
+
+    <div class="day-body">
+      화요일에 만든 자산들을 묶어, <strong>하나의 Agent 가 여러 문제를 처리</strong> 하도록 구조화한다.<br/>
+      유의미한 트리거에 연결해 <em>실제로 도는 상태</em> 까지 가져간다.
+    </div>
+
+    <div class="day-tag">Slack 호출 · 채널톡 Webhook · 어드민 액션</div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第十三頁</div>
+</section>
+
+<!-- ============== 15. 진행방식 木 (목) ============== -->
+<section class="slide day-slide">
+  <div class="chapter">第七章 ◆ 修練 · 第三日</div>
+  <div class="vbanner">木은 하늘로 자란다</div>
+
+  <div class="day-big">木</div>
+
+  <div class="day-content">
+    <div class="day-marker">第三日 · 木曜日</div>
+    <div class="day-marker-kr">목 — Ralph Loop · 꿈의 문제</div>
+
+    <div class="day-title">
+      <em>어떻게 해결할지 모르는 문제</em><br/>
+      에 도전하기
+    </div>
+
+    <div class="day-body">
+      해결법을 모르는 문제 — <em>오늘이 지나도 해결하고 싶은 꿈의 문제</em> — 를 잡는다.<br/>
+      <strong>1원칙으로 분해</strong> 해서 풀 수 있는 형태로 재구성하는 데 시간을 쓴다.
+    </div>
+
+    <div class="day-tag">Ralph Loop · 1원칙 분해</div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第十四頁</div>
+</section>
+
+<!-- ============== 16. 팀 구성 원칙 ============== -->
+<section class="slide">
+  <div class="chapter">第八章 ◆ 同門</div>
+  <div class="vbanner">同門과 함께 길을 가되 발은 본인의 발</div>
+
+  <div class="slide-head">
+    <div class="slide-title">팀 구성 원칙</div>
+    <div class="slide-subtitle">同門 · 사문(師門)의 규율</div>
+  </div>
+
+  <div class="slide-body">
+    <div class="tprinciples">
+      <div class="tprinciple">
+        <div class="tp-num">一</div>
+        <div class="tp-text">문제에 따라 <strong>2-3 명 단위</strong> 로 팀을 만든다. 문제가 바뀌면 <em>자유롭게 재조직</em>.</div>
+      </div>
+
+      <div class="tprinciple">
+        <div class="tp-num">二</div>
+        <div class="tp-text"><strong>같은 단계의 관원끼리만</strong> 팀을 구성한다. — 문제를 빨리 푸는 것보다 <em>AI 를 스스로 사용할 수 있게 되는 것</em> 이 우선이기 때문.</div>
+      </div>
+
+      <div class="tprinciple">
+        <div class="tp-num">三</div>
+        <div class="tp-text">본인의 능력이 다음 단계로 넘어갔다고 판단되면 <span class="accent-red">재용 확인 후</span> 다음 단계 관원들과 팀 구성 가능.</div>
+      </div>
+
+      <div class="tprinciple">
+        <div class="tp-num">四</div>
+        <div class="tp-text">학습과 문제 해결을 위해 AI · 인간 모두에게 <strong>자유롭게 질의</strong> 가능. — <em>팀 구성은 같은 단계만, 질문은 누구에게나</em>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第十五頁</div>
+</section>
+
+<!-- ============== 17. 단계 구분 ============== -->
+<section class="slide">
+  <div class="chapter">第九章 ◆ 段位</div>
+  <div class="vbanner">段을 매기되 사람을 가두지 않는다</div>
+
+  <div class="slide-head">
+    <div class="slide-title">단계 구분</div>
+    <div class="slide-subtitle">段位 · 관원의 自陣</div>
+  </div>
+
+  <div class="slide-body">
+    <div class="ranks">
+      <div class="rank-card">
+        <div class="rank-mark">一段</div>
+        <div class="rank-name">1단</div>
+        <div class="rank-def">AI 를 사용해서 문제를 해결할 수 있음</div>
+        <div class="rank-members">희재 · 민철</div>
+      </div>
+
+      <div class="rank-card">
+        <div class="rank-mark">二段</div>
+        <div class="rank-name">2단</div>
+        <div class="rank-def">MCP · SKILL 등 외부 도구를 능숙하게 쓰고 <em style="color: var(--gold-bright); font-style: normal;">재사용 가능한 형태로 패키징</em> 가능</div>
+        <div class="rank-members">겸송 · 채원 · 상권</div>
+      </div>
+
+      <div class="rank-card">
+        <div class="rank-mark">三段</div>
+        <div class="rank-name">3단</div>
+        <div class="rank-def">Agent 를 설계하거나 직접 코드를 구현해 <em style="color: var(--gold-bright); font-style: normal;">반복적인 문제 해결의 구조</em> 를 설계 가능</div>
+        <div class="rank-members">재용 · 병만</div>
+      </div>
+    </div>
+
+    <div class="guest-row">
+      <div class="guest-label">客員 · 게스트 관원</div>
+      <div class="guest-members">재호 · 지혜 · 서영 · 새암 · 준용 · 예진</div>
+    </div>
+  </div>
+
+  <div class="workshop-tag">AI 閉關修練</div>
+  <div class="pagemeta">第十六頁</div>
+</section>
+
+<!-- ============== 18. 종장 ============== -->
+<section class="slide final-slide">
+  <div class="vbanner">끝나지 않으면 한 나간다</div>
+  <div class="vbanner-r">出關 — 수련의 끝은 시작이다</div>
+
+  <div class="final-eyebrow">終章 · 出關</div>
+  <div class="final-main">파쇄허공</div>
+
+  <svg class="brush-div" viewBox="0 0 160 14" preserveAspectRatio="none" style="width:200px; margin-bottom: 40px;">
+    <path d="M2,7 C20,3 40,11 60,7 C80,3 100,11 120,7 C140,3 158,7 158,7" stroke="currentColor" stroke-width="1.5" fill="none" style="stroke:var(--gold)" />
+    <circle cx="80" cy="7" r="3" fill="var(--seal)"/>
+  </svg>
+
+  <div class="final-sub">
+    虛空을 부수고 나가는 그 순간,<br/>
+    <strong>수련은 끝나지만 길은 비로소 시작된다</strong>
+  </div>
+
+  <div class="final-stamp">
+    <span class="seal">道</span>
+  </div>
+</section>
+
+</div>
+
+<div class="nav">
+  <button class="nav-btn" id="prev">← 前</button>
+  <span class="nav-info"><span id="curr">1</span> / <span id="total">18</span></span>
+  <button class="nav-btn" id="next">後 →</button>
+</div>
+
+<div class="kbd-hint">← / → · Space · Home · End · F (fullscreen)</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  document.getElementById('total').textContent = total;
+
+  function show(i) {
+    if (i < 0) i = 0;
+    if (i >= total) i = total - 1;
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    document.getElementById('curr').textContent = i + 1;
+    current = i;
+    // update URL hash for deep linking
+    history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  document.getElementById('prev').addEventListener('click', () => show(current - 1));
+  document.getElementById('next').addEventListener('click', () => show(current + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    switch (e.key) {
+      case 'ArrowRight':
+      case ' ':
+      case 'PageDown':
+        e.preventDefault();
+        show(current + 1);
+        break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault();
+        show(current - 1);
+        break;
+      case 'Home':
+        e.preventDefault();
+        show(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        show(total - 1);
+        break;
+      case 'f':
+      case 'F':
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+        break;
+    }
+  });
+
+  // Deep link via hash
+  if (location.hash) {
+    const n = parseInt(location.hash.slice(1), 10);
+    if (!isNaN(n) && n >= 1 && n <= total) show(n - 1);
+  }
+
+  // Click on right/left half to advance/retreat (presenter convenience)
+  document.querySelector('.deck').addEventListener('click', e => {
+    if (e.target.closest('.nav') || e.target.closest('a') || e.target.closest('button')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x > 0.55) show(current + 1);
+    else if (x < 0.45) show(current - 1);
+  });
+</script>
+</body>
+</html>

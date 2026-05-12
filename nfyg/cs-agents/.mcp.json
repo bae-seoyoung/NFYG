@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "notion": {
+      "type": "http",
+      "url": "https://mcp.notion.com/mcp"
+    },
+    "nfyg_admin_mcp": {
+      "type": "http",
+      "url": "https://nfyg-admin-kq34ngdawq-an.a.run.app/mcp",
+      "headers": {
+        "X-NAO-Token": "${WORKSHOP_MCP_SECRET}"
+      }
+    },
+    "dbhub": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@bytebase/dbhub@latest",
+        "--dsn",
+        "${DBHUB_DSN_NETFLIX_SALON}",
+        "--read-only"
+      ]
+    }
+  }
+}
