@@ -72,8 +72,8 @@ curl -X PATCH "https://api.channel.io/open/v5/user-chats/[CHAT_ID]/close?botName
 
 ## 상태 파일
 
-- `state/inbox.md` — 처리할 문의 목록 (왼쪽 pane의 폴러가 갱신)
-- `state/draft.md` — 승인 대기 중인 응답 초안
+- `state/nfyg-inbox.md` — 처리할 문의 목록 (폴러가 갱신)
+- `state/nfyg-draft.md` — 승인 대기 중인 응답 초안
 
 ## 사용 가능한 MCP 도구
 
