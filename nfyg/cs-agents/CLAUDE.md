@@ -14,7 +14,7 @@
 ## 처리 흐름
 
 ```
-1. state/inbox.md에서 문의 확인
+1. state/nfyg-inbox.md에서 문의 확인
 2. 문의 분류 (아래 기준 참고)
 3. 필요한 정보 수집
    - 정책/가이드 → Notion MCP로 검색
@@ -23,7 +23,29 @@
 5. 발송 결정 (아래 기준 참고)
 6. 채팅 종료 — 응답이 발송되어 문의가 해소된 경우 반드시 채팅을 closed 상태로 전환
    - 이미 다른 매니저가 답변을 완료한 경우에도 동일하게 종료 처리
+7. 로그 기록 — 케이스 처리 후 반드시 state/nfyg-log.md에 아래 형식으로 기록
 ```
+
+## 로그 기록 형식
+
+케이스 처리 완료 후 `state/nfyg-log.md`에 추가한다.
+
+```
+## [YYYY-MM-DD HH:MM] {chat_id}
+
+- 분류: faq | db_lookup | action_required | unknown
+- 신뢰도: 0.0~1.0
+- Notion 검색어: [사용한 키워드]
+- Notion 결과: found | not_found | partial
+- DB 조회: yes | no
+- 처리 결과: auto_sent | draft | skipped
+- 매니저 수정: yes | no | pending
+- notion_gap: [Notion에서 못 찾은 정보 — 없으면 생략]
+- db_gap: [DB에서 못 찾은 정보 — 없으면 생략]
+- 메모: [특이사항]
+```
+
+`notion_gap`은 피드백 루프의 핵심 데이터다. Notion 검색 결과가 없거나 불충분했던 경우 반드시 기록한다.
 
 ## 분류 기준
 
